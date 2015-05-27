@@ -47,13 +47,25 @@ describe('pgtest', function () {
     });
     
     describe('returning', function () {
-        it('should make the query return data', function () {
+        it('should let the query return data', function () {
             var rows = [['potatoes', '1kg'], ['tomatoes', '500g']];
             pgtest.expect('SELECT * FROM vegetables').returning(null, rows);
             
             pgtest.connect('foo', function (err, client, done) {
                 client.query('SELECT * FROM vegetables', function (err, data) {
+                    expect(err).to.be.equal(null);
                     expect(data.rows).to.be.deep.equal(rows);
+                });
+            });
+        });
+        
+        it('should let the query return errors', function () {
+            pgtest.expect('SELECT * FROM vegetables').returning('error');
+            
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('SELECT * FROM vegetables', function (err, data) {
+                    expect(err).to.be.equal('error');
+                    expect(data).to.be.deep.equal(null);
                 });
             });
         });
@@ -79,14 +91,18 @@ describe('pgtest', function () {
             expect(test).to.Throw('Not all queries were executed');
         });
     });
-});
+    
+    describe('client', function () {
+        it('should call callback after a query', function () {
+            var spy;
+            spy = sinon.spy();
+            pgtest.expect('SELECT * FROM vegetables').returning('error');
+            
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('SELECT * FROM vegetables', spy);
+            });
 
-/*
-var spy1, spy2;
-                
-                spy1 = sinon.spy();
-                spy2 = sinon.spy();
-                
-                expect(spy1.calledOne).to.be.equal(true);
-                expect(spy2.calledOne).to.be.equal(true);
-*/
+            expect(spy.calledOnce).to.be.equal(true);
+        });
+    });
+});
