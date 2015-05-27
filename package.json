@@ -4,7 +4,7 @@
   "description": "A module that provides easy unit-testing for the popular node-postgres.",
   "main": "lib/pgtest.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node_modules/.bin/mocha --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "chai": "^2.3.0",
-    "mocha": "^2.2.5"
+    "mocha": "^2.2.5",
+    "sinon": "^1.14.1"
   }
 }
