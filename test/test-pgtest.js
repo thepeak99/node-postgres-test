@@ -44,6 +44,36 @@ describe('pgtest', function () {
             }
             expect(test).to.Throw(/Unexpected query/);
         });
+        
+        it('should reject queries with unexpected parameters', function () {
+            pgtest.expect('SELECT * FROM vegetables');
+            
+            function test() {
+                pgtest.connect('foo', function (err, client, done) {
+                    client.query('SELECT * FROM vegetables', ['potato'], function () {});
+                });
+            }
+            expect(test).to.Throw('Unexpected params: potato');
+        });
+        
+        it('should reject queries that do not contain requested params', function () {
+            pgtest.expect('SELECT * FROM vegetables WHERE name = $1', ['potato']);
+            
+            function test() {
+                pgtest.connect('foo', function (err, client, done) {
+                    client.query('SELECT * FROM vegetables WHERE name = $1', function () {});
+                });
+            }
+            expect(test).to.Throw('Missing expected params');
+        });
+        
+        it('should accept expected queries with params', function () {
+            pgtest.expect('SELECT * FROM vegetables WHERE name = $1', ['potato']);
+            
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('SELECT * FROM vegetables WHERE name = $1', ['potato'], function () { });
+            });
+        });
     });
     
     describe('returning', function () {
