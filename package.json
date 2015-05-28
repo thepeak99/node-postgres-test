@@ -1,5 +1,5 @@
 {
-  "name": "node-postgres-test",
+  "name": "pgtest",
   "version": "0.1.0",
   "description": "A module that provides easy unit-testing for the popular node-postgres.",
   "main": "lib/pgtest.js",
