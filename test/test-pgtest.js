@@ -12,6 +12,24 @@ describe('pgtest', function () {
         pgtest.reset(true);
     });
     
+    describe('Docs', function () {
+        it('should run the example in README', function () {
+            pgtest.expect('SELECT * FROM vegetables').returning(null, [
+                [ 'potatoes', '1kg' ],
+                [ 'tomatoes', '500g' ]
+            ]);
+
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('SELECT * FROM vegetables', function (err, data) {
+                    expect(data).to.be.deep.equal({ rows: [ [ 'potatoes', '1kg' ], [ 'tomatoes', '500g' ] ] });
+                    done();
+                });
+            });
+
+            pgtest.check(); //No errors
+        });
+    });
+    
     describe('connect', function () {
         it('should call its callback with a client and a done function', function (testDone) {
             pgtest.connect('foo', function (err, client, done) {

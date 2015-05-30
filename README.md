@@ -4,6 +4,9 @@
 
 node-postgres-test is a module that provides easy unit testing for the popular [node-postgres](https://github.com/brianc/node-postgres).
 
+## Install
+    npm install pgtest
+
 ## Example
 ```javascript
 
@@ -15,7 +18,7 @@ pgtest.expect('SELECT * FROM vegetables').returning(null, [
 ]);
 
 pgtest.connect('foo', function (err, client, done) {
-    client.query('SELECT * FROM vegetables', function(err, data) {
+    client.query('SELECT * FROM vegetables', function (err, data) {
         console.log(data);
         done();
     });
