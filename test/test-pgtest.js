@@ -1,22 +1,27 @@
 /*jslint node: true nomen: true*/
-/*global describe, it, before, beforeEach*/
+/*global describe, it, before, beforeEach, afterEach*/
 'use strict';
 
 var expect = require('chai').expect;
-var sinon = require('sinon');
+var async = require('async');
+
 var pgtest = require('../lib/pgtest');
 
 describe('pgtest', function () {
-    beforeEach(function () {
-        pgtest.reset();
+    afterEach(function () {
+        pgtest.reset(true);
     });
     
     describe('connect', function () {
-        it('should call its callback with a client and a done function', function () {
+        it('should call its callback with a client and a done function', function (testDone) {
             pgtest.connect('foo', function (err, client, done) {
                 expect(err).to.be.equal(null);
                 expect(client).to.be.not.equal(null);
                 expect(done).to.be.not.equal(null);
+                
+                done();
+                pgtest.check();
+                testDone();
             });
         });
     });
@@ -29,42 +34,43 @@ describe('pgtest', function () {
             pgtest.connect('foo', function (err, client, done) {
                 client.query('SELECT * FROM vegetables', function () {});
                 client.query('SELECT * FROM fruits', function () {});
+                done();
             });
+            
+            pgtest.check();
         });
 
         it('should reject queries in different order', function () {
             pgtest.expect('SELECT * FROM vegetables');
             pgtest.expect('SELECT * FROM fruits');
             
-            function test() {
-                pgtest.connect('foo', function (err, client, done) {
-                    client.query('SELECT * FROM fruits', function () {});
-                    client.query('SELECT * FROM vegetables', function () {});
-                });
-            }
-            expect(test).to.Throw(/Unexpected query/);
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('SELECT * FROM fruits', function () {});
+                client.query('SELECT * FROM vegetables', function () {});
+            });
+            
+            expect(pgtest.check).to.Throw(/Unexpected query/);
         });
         
         it('should reject queries with unexpected parameters', function () {
             pgtest.expect('SELECT * FROM vegetables');
             
-            function test() {
-                pgtest.connect('foo', function (err, client, done) {
-                    client.query('SELECT * FROM vegetables', ['potato'], function () {});
-                });
-            }
-            expect(test).to.Throw('Unexpected params: potato');
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('SELECT * FROM vegetables', ['potato'], function () {});
+            });
+            
+            expect(pgtest.check).to.Throw('Unexpected params: potato');
         });
         
         it('should reject queries that do not contain requested params', function () {
             pgtest.expect('SELECT * FROM vegetables WHERE name = $1', ['potato']);
             
-            function test() {
-                pgtest.connect('foo', function (err, client, done) {
-                    client.query('SELECT * FROM vegetables WHERE name = $1', function () {});
-                });
-            }
-            expect(test).to.Throw('Missing expected params');
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('SELECT * FROM vegetables WHERE name = $1', function () {});
+                done();
+            });
+            
+            expect(pgtest.check).to.Throw('Missing expected params');
         });
         
         it('should accept expected queries with params', function () {
@@ -72,7 +78,10 @@ describe('pgtest', function () {
             
             pgtest.connect('foo', function (err, client, done) {
                 client.query('SELECT * FROM vegetables WHERE name = $1', ['potato'], function () { });
+                done();
             });
+            
+            pgtest.check();
         });
     });
     
@@ -86,7 +95,10 @@ describe('pgtest', function () {
                     expect(err).to.be.equal(null);
                     expect(data.rows).to.be.deep.equal(rows);
                 });
+                done();
             });
+            
+            pgtest.check();
         });
         
         it('should let the query return errors', function () {
@@ -97,17 +109,37 @@ describe('pgtest', function () {
                     expect(err).to.be.equal('error');
                     expect(data).to.be.deep.equal(null);
                 });
+                done();
             });
+            pgtest.check();
         });
+
+        it('should work with async properly', function () {
+            pgtest.expect('SELECT * FROM vegetables WHERE name = $1', ['potato']).returning('potato err', null);
+            pgtest.expect('SELECT * FROM fruits WHERE name = $1', ['banana']).returning(null, []);
+            
+            pgtest.connect('foo', function (err, client, done) {
+                async.parallel({
+                    first: function (cb) {
+                        client.query('SELECT * FROM vegetables WHERE name = $1', ['potato'], cb);
+                    },
+                    second: function (cb) {
+                        client.query('SELECT * FROM fruits WHERE name = $1', ['banana'], cb);
+                    }
+                }, function (err) {
+                    done();
+                });
+            });
+            
+            pgtest.check();
+        });
+
     });
     
     describe('check', function () {
         it('should fail if done() was not called', function () {
             pgtest.connect('foo', function (err, client, done) { });
-            function test() {
-                pgtest.check();
-            }
-            expect(test).to.Throw('Done was not called');
+            expect(pgtest.check).to.Throw('Done was not called');
         });
         
         it('should fail if not all queries were run', function () {
@@ -115,24 +147,25 @@ describe('pgtest', function () {
             pgtest.connect('foo', function (err, client, done) {
                 done();
             });
-            function test() {
-                pgtest.check();
-            }
-            expect(test).to.Throw('Not all queries were executed');
+            expect(pgtest.check).to.Throw('Not all queries were executed');
         });
     });
     
     describe('client', function () {
         it('should call callback after a query', function () {
-            var spy;
-            spy = sinon.spy();
+            var calls = 0;
             pgtest.expect('SELECT * FROM vegetables').returning('error');
             
             pgtest.connect('foo', function (err, client, done) {
-                client.query('SELECT * FROM vegetables', spy);
+                client.query('SELECT * FROM vegetables', function () {
+                    calls += 1;
+                });
+                done();
             });
+            
+            pgtest.check();
 
-            expect(spy.calledOnce).to.be.equal(true);
+            expect(calls).to.be.equal(1);
         });
     });
 });

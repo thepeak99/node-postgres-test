@@ -28,8 +28,8 @@
     "lodash": "^3.9.3"
   },
   "devDependencies": {
+    "async": "^1.0.0",
     "chai": "^2.3.0",
-    "mocha": "^2.2.5",
-    "sinon": "^1.14.1"
+    "mocha": "^2.2.5"
   }
 }
