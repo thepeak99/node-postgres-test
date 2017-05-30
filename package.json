@@ -1,6 +1,6 @@
 {
   "name": "pgtest",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A module that provides easy unit-testing for the popular node-postgres.",
   "main": "lib/pgtest.js",
   "scripts": {
@@ -24,12 +24,12 @@
   },
   "homepage": "https://github.com/thepeak99/node-postgres-test",
   "dependencies": {
-    "async": "^1.0.0",
+    "assertion-error": "1.0.1",
     "escape-string-regexp": "^1.0.5",
     "lodash": "^3.9.3"
   },
   "devDependencies": {
-    "assertion-error": "1.0.0",
+    "async": "^1.0.0",
     "chai": "^2.3.0",
     "mocha": "^2.2.5"
   }
