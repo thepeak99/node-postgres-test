@@ -29,6 +29,7 @@
     "lodash": "^3.9.3"
   },
   "devDependencies": {
+    "assertion-error": "1.0.0",
     "chai": "^2.3.0",
     "mocha": "^2.2.5"
   }
