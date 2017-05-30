@@ -101,6 +101,15 @@ describe('pgtest', function () {
             
             pgtest.check();
         });
+
+        it('should escape parenthesis properly', function () {
+            pgtest.expect("INSERT INTO vegetables(id, name) VALUES ($1, $2)", ['1', 'potato']);
+            pgtest.connect('foo', function (err, client, done) {
+                client.query('INSERT INTO vegetables(id, name) VALUES ($1, $2)', ['1', 'potato'], function () { });
+                done();
+            });
+            pgtest.check();
+        });
     });
     
     describe('returning', function () {

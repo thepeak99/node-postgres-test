@@ -24,11 +24,11 @@
   },
   "homepage": "https://github.com/thepeak99/node-postgres-test",
   "dependencies": {
-    "assertion-error": "^1.0.1",
+    "async": "^1.0.0",
+    "escape-string-regexp": "^1.0.5",
     "lodash": "^3.9.3"
   },
   "devDependencies": {
-    "async": "^1.0.0",
     "chai": "^2.3.0",
     "mocha": "^2.2.5"
   }
