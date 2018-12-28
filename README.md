@@ -1,4 +1,4 @@
-#node-postgres-test
+# node-postgres-test
 
 [![Build Status](https://travis-ci.org/thepeak99/node-postgres-test.svg?branch=master)](https://travis-ci.org/thepeak99/node-postgres-test)
 
