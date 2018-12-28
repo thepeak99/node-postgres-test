@@ -31,6 +31,6 @@
   "devDependencies": {
     "async": "^1.0.0",
     "chai": "^2.3.0",
-    "mocha": "^5.2.0"
+    "mocha": "3.5.3"
   }
 }
